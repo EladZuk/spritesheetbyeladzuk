@@ -1,24 +1,30 @@
 import { useState, useCallback } from "react";
 import { FrameData, SpriteSheetSettings, ExportInfo, ValidationError } from "@/types/spritesheet";
 
+const DEFAULT_SETTINGS: SpriteSheetSettings = {
+  frameWidth: 500,
+  frameHeight: 500,
+  columns: 5,
+  spacing: 0,
+  padding: 0,
+  animationName: "",
+  suggestedFps: 12,
+};
+
 export function useSpriteSheet() {
   const [frames, setFrames] = useState<FrameData[]>([]);
-  const [settings, setSettings] = useState<SpriteSheetSettings>({
-    frameWidth: 500,
-    frameHeight: 500,
-    columns: 5,
-    spacing: 0,
-    padding: 0,
-    animationName: "",
-    suggestedFps: 12,
-  });
+  const [settings, setSettings] = useState<SpriteSheetSettings>(DEFAULT_SETTINGS);
   const [generatedSheet, setGeneratedSheet] = useState<string | null>(null);
   const [exportInfo, setExportInfo] = useState<ExportInfo | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
+  const [detectedSize, setDetectedSize] = useState<{ width: number; height: number } | null>(null);
+  const [showSizeDialog, setShowSizeDialog] = useState(false);
+  const [hasManuallySetSize, setHasManuallySetSize] = useState(false);
 
   const addFiles = useCallback(async (files: FileList) => {
     const newFrames: FrameData[] = [];
+    let firstFrameSize: { width: number; height: number } | null = null;
 
     for (const file of Array.from(files)) {
       if (!file.type.includes("png")) continue;
@@ -31,6 +37,11 @@ export function useSpriteSheet() {
         img.onload = () => resolve({ width: img.width, height: img.height });
         img.src = thumbnailUrl;
       });
+
+      // Capture first frame size for auto-detection
+      if (!firstFrameSize) {
+        firstFrameSize = { width: dimensions.width, height: dimensions.height };
+      }
 
       newFrames.push({
         id: `${file.name}-${Date.now()}-${Math.random()}`,
@@ -52,7 +63,13 @@ export function useSpriteSheet() {
     });
     setGeneratedSheet(null);
     setExportInfo(null);
-  }, []);
+
+    // Auto-detect frame size from first PNG if not manually set
+    if (firstFrameSize && !hasManuallySetSize) {
+      setDetectedSize(firstFrameSize);
+      setShowSizeDialog(true);
+    }
+  }, [hasManuallySetSize]);
 
   const removeFrame = useCallback((id: string) => {
     setFrames((prev) => {
@@ -153,10 +170,45 @@ export function useSpriteSheet() {
     }
   }, [frames, settings, validateFrames]);
 
+  const clearAll = useCallback(() => {
+    // Revoke all object URLs
+    frames.forEach((frame) => URL.revokeObjectURL(frame.thumbnailUrl));
+    
+    setFrames([]);
+    setSettings(DEFAULT_SETTINGS);
+    setGeneratedSheet(null);
+    setExportInfo(null);
+    setValidationErrors([]);
+    setDetectedSize(null);
+    setShowSizeDialog(false);
+    setHasManuallySetSize(false);
+  }, [frames]);
+
+  const applyDetectedSize = useCallback(() => {
+    if (detectedSize) {
+      setSettings((prev) => ({
+        ...prev,
+        frameWidth: detectedSize.width,
+        frameHeight: detectedSize.height,
+      }));
+    }
+    setShowSizeDialog(false);
+  }, [detectedSize]);
+
+  const dismissSizeDialog = useCallback(() => {
+    setShowSizeDialog(false);
+  }, []);
+
+  const updateSettings = useCallback((newSettings: SpriteSheetSettings) => {
+    setSettings(newSettings);
+    // Mark as manually set if width or height changed
+    setHasManuallySetSize(true);
+  }, []);
+
   return {
     frames,
     settings,
-    setSettings,
+    setSettings: updateSettings,
     addFiles,
     removeFrame,
     reorderFrames,
@@ -166,5 +218,10 @@ export function useSpriteSheet() {
     isGenerating,
     validationErrors,
     validateFrames,
+    clearAll,
+    detectedSize,
+    showSizeDialog,
+    applyDetectedSize,
+    dismissSizeDialog,
   };
 }

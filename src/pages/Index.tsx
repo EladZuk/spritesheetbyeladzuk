@@ -1,11 +1,15 @@
 import { useState, useEffect } from "react";
-import { Layers, Grid3X3 } from "lucide-react";
+import { Layers, Grid3X3, Film } from "lucide-react";
 import { FileUpload } from "@/components/FileUpload";
 import { FrameList } from "@/components/FrameList";
 import { SettingsPanel } from "@/components/SettingsPanel";
 import { BaselineGuide } from "@/components/BaselineGuide";
 import { PreviewPanel } from "@/components/PreviewPanel";
 import { UnityGuide } from "@/components/UnityGuide";
+import { TopBar } from "@/components/TopBar";
+import { AnimationPreview } from "@/components/AnimationPreview";
+import { ClearAllDialog } from "@/components/ClearAllDialog";
+import { FrameSizeDetectedDialog } from "@/components/FrameSizeDetectedDialog";
 import { useSpriteSheet } from "@/hooks/useSpriteSheet";
 
 const Index = () => {
@@ -22,6 +26,11 @@ const Index = () => {
     isGenerating,
     validationErrors,
     validateFrames,
+    clearAll,
+    detectedSize,
+    showSizeDialog,
+    applyDetectedSize,
+    dismissSizeDialog,
   } = useSpriteSheet();
 
   const [baselineEnabled, setBaselineEnabled] = useState(false);
@@ -39,23 +48,33 @@ const Index = () => {
     }
   }, [frames, settings.frameWidth, settings.frameHeight, validateFrames]);
 
+  const handleFpsChange = (fps: number) => {
+    setSettings({ ...settings, suggestedFps: fps });
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      {/* Top Credit Bar */}
+      <TopBar />
+
       {/* Header */}
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
-              <Grid3X3 className="w-5 h-5 text-primary" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                <Grid3X3 className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h1 className="text-lg font-semibold text-foreground">
+                  Unity Sprite Sheet Builder
+                </h1>
+                <p className="text-xs text-muted-foreground">
+                  Upload PNG frames, get a Unity-ready sprite sheet.
+                </p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-lg font-semibold text-foreground">
-                Unity Sprite Sheet Builder
-              </h1>
-              <p className="text-xs text-muted-foreground">
-                Upload PNG frames, get a Unity-ready sprite sheet.
-              </p>
-            </div>
+            <ClearAllDialog onConfirm={clearAll} disabled={frames.length === 0} />
           </div>
         </div>
       </header>
@@ -108,19 +127,37 @@ const Index = () => {
             <UnityGuide />
           </aside>
 
-          {/* Right Panel - Preview */}
-          <section className="panel min-h-[600px]">
-            <PreviewPanel
-              frames={frames}
-              settings={settings}
-              generatedSheet={generatedSheet}
-              exportInfo={exportInfo}
-              onGenerate={generateSheet}
-              isGenerating={isGenerating}
-              hasValidationErrors={validationErrors.length > 0}
-              baselineEnabled={baselineEnabled}
-              baselineOffset={baselineOffset}
-            />
+          {/* Right Panel - Preview & Animation */}
+          <section className="space-y-4">
+            {/* Sprite Sheet Preview */}
+            <div className="panel min-h-[500px]">
+              <PreviewPanel
+                frames={frames}
+                settings={settings}
+                generatedSheet={generatedSheet}
+                exportInfo={exportInfo}
+                onGenerate={generateSheet}
+                isGenerating={isGenerating}
+                hasValidationErrors={validationErrors.length > 0}
+                baselineEnabled={baselineEnabled}
+                baselineOffset={baselineOffset}
+              />
+            </div>
+
+            {/* Animation Preview */}
+            <div className="panel">
+              <div className="panel-header mb-0">
+                <Film className="w-4 h-4 text-primary" />
+                <span>Animation Preview</span>
+              </div>
+              <AnimationPreview
+                frames={frames}
+                fps={settings.suggestedFps}
+                onFpsChange={handleFpsChange}
+                frameWidth={settings.frameWidth}
+                frameHeight={settings.frameHeight}
+              />
+            </div>
           </section>
         </div>
       </main>
@@ -145,6 +182,15 @@ const Index = () => {
           </ul>
         </div>
       )}
+
+      {/* Frame Size Detection Dialog */}
+      <FrameSizeDetectedDialog
+        open={showSizeDialog}
+        detectedWidth={detectedSize?.width || 0}
+        detectedHeight={detectedSize?.height || 0}
+        onUseDetected={applyDetectedSize}
+        onChangeManually={dismissSizeDialog}
+      />
     </div>
   );
 };

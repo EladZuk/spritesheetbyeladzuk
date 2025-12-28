@@ -1,7 +1,9 @@
-import { useRef, useEffect } from "react";
-import { Download, ZoomIn, ZoomOut, AlertTriangle } from "lucide-react";
+import { useRef } from "react";
+import { Download, AlertTriangle, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FrameData, SpriteSheetSettings, ExportInfo } from "@/types/spritesheet";
+import { useState } from "react";
+import { toast } from "sonner";
 
 interface PreviewPanelProps {
   frames: FrameData[];
@@ -27,6 +29,7 @@ export function PreviewPanel({
   baselineOffset,
 }: PreviewPanelProps) {
   const previewRef = useRef<HTMLDivElement>(null);
+  const [copied, setCopied] = useState(false);
   const canGenerate = frames.length > 0 && settings.frameWidth > 0 && settings.frameHeight > 0 && !hasValidationErrors;
 
   const downloadSheet = () => {
@@ -35,6 +38,26 @@ export function PreviewPanel({
     link.download = `${settings.animationName || "sprite"}_sheet.png`;
     link.href = generatedSheet;
     link.click();
+  };
+
+  const copyExportInfo = async () => {
+    if (!exportInfo) return;
+    
+    const text = `Animation name: ${exportInfo.animationName || "sprite"}
+Frame size: ${exportInfo.frameWidth} × ${exportInfo.frameHeight}
+Frames: ${exportInfo.frameCount}
+Columns: ${exportInfo.columns}
+Rows: ${exportInfo.rows}
+Suggested FPS (Unity): ${exportInfo.suggestedFps}`;
+
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      toast.success("Export info copied to clipboard");
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      toast.error("Failed to copy to clipboard");
+    }
   };
 
   // Calculate preview grid dimensions
@@ -146,8 +169,8 @@ export function PreviewPanel({
       {/* Export Info & Download */}
       {exportInfo && generatedSheet && (
         <div className="mt-4 p-4 rounded-lg bg-card border border-border">
-          <div className="flex items-start justify-between">
-            <div className="space-y-2 text-xs font-mono">
+          <div className="flex items-start justify-between gap-4">
+            <div className="space-y-2 text-xs font-mono flex-1">
               <div className="grid grid-cols-2 gap-x-8 gap-y-1">
                 <span className="text-muted-foreground">Animation:</span>
                 <span className="text-foreground">{exportInfo.animationName || "sprite"}</span>
@@ -163,10 +186,16 @@ export function PreviewPanel({
                 <span className="text-primary">{exportInfo.suggestedFps}</span>
               </div>
             </div>
-            <Button onClick={downloadSheet} className="gap-2">
-              <Download className="w-4 h-4" />
-              Download PNG
-            </Button>
+            <div className="flex flex-col gap-2">
+              <Button onClick={copyExportInfo} variant="outline" size="sm" className="gap-2">
+                {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                {copied ? "Copied!" : "Copy Info"}
+              </Button>
+              <Button onClick={downloadSheet} className="gap-2">
+                <Download className="w-4 h-4" />
+                Download PNG
+              </Button>
+            </div>
           </div>
         </div>
       )}
