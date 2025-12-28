@@ -1,12 +1,150 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState, useEffect } from "react";
+import { Layers, Grid3X3 } from "lucide-react";
+import { FileUpload } from "@/components/FileUpload";
+import { FrameList } from "@/components/FrameList";
+import { SettingsPanel } from "@/components/SettingsPanel";
+import { BaselineGuide } from "@/components/BaselineGuide";
+import { PreviewPanel } from "@/components/PreviewPanel";
+import { UnityGuide } from "@/components/UnityGuide";
+import { useSpriteSheet } from "@/hooks/useSpriteSheet";
 
 const Index = () => {
+  const {
+    frames,
+    settings,
+    setSettings,
+    addFiles,
+    removeFrame,
+    reorderFrames,
+    generateSheet,
+    generatedSheet,
+    exportInfo,
+    isGenerating,
+    validationErrors,
+    validateFrames,
+  } = useSpriteSheet();
+
+  const [baselineEnabled, setBaselineEnabled] = useState(false);
+  const [baselineOffset, setBaselineOffset] = useState(Math.round(settings.frameHeight * 0.85));
+
+  // Update baseline offset when frame height changes
+  useEffect(() => {
+    setBaselineOffset(Math.round(settings.frameHeight * 0.85));
+  }, [settings.frameHeight]);
+
+  // Validate frames when settings change
+  useEffect(() => {
+    if (frames.length > 0) {
+      validateFrames();
+    }
+  }, [frames, settings.frameWidth, settings.frameHeight, validateFrames]);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+              <Grid3X3 className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-lg font-semibold text-foreground">
+                Unity Sprite Sheet Builder
+              </h1>
+              <p className="text-xs text-muted-foreground">
+                Upload PNG frames, get a Unity-ready sprite sheet.
+              </p>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="container mx-auto px-4 py-6">
+        <div className="grid lg:grid-cols-[360px_1fr] gap-6">
+          {/* Left Sidebar - Controls */}
+          <aside className="space-y-4">
+            {/* File Upload */}
+            <div className="panel">
+              <div className="panel-header">
+                <Layers className="w-4 h-4 text-primary" />
+                <span>Frames</span>
+              </div>
+              <FileUpload onFilesSelected={addFiles} frameCount={frames.length} />
+              <div className="mt-4">
+                <FrameList
+                  frames={frames}
+                  onReorder={reorderFrames}
+                  onRemove={removeFrame}
+                  validationErrors={validationErrors}
+                  expectedWidth={settings.frameWidth}
+                  expectedHeight={settings.frameHeight}
+                />
+              </div>
+            </div>
+
+            {/* Settings */}
+            <div className="panel">
+              <div className="panel-header">
+                <Grid3X3 className="w-4 h-4 text-primary" />
+                <span>Settings</span>
+              </div>
+              <SettingsPanel settings={settings} onSettingsChange={setSettings} />
+            </div>
+
+            {/* Baseline Guide */}
+            <div className="panel">
+              <BaselineGuide
+                enabled={baselineEnabled}
+                offset={baselineOffset}
+                frameHeight={settings.frameHeight}
+                onEnabledChange={setBaselineEnabled}
+                onOffsetChange={setBaselineOffset}
+              />
+            </div>
+
+            {/* Unity Guide */}
+            <UnityGuide />
+          </aside>
+
+          {/* Right Panel - Preview */}
+          <section className="panel min-h-[600px]">
+            <PreviewPanel
+              frames={frames}
+              settings={settings}
+              generatedSheet={generatedSheet}
+              exportInfo={exportInfo}
+              onGenerate={generateSheet}
+              isGenerating={isGenerating}
+              hasValidationErrors={validationErrors.length > 0}
+              baselineEnabled={baselineEnabled}
+              baselineOffset={baselineOffset}
+            />
+          </section>
+        </div>
+      </main>
+
+      {/* Validation Errors */}
+      {validationErrors.length > 0 && (
+        <div className="fixed bottom-4 right-4 max-w-sm p-4 rounded-lg bg-destructive/10 border border-destructive/30 animate-fade-in">
+          <p className="text-sm font-medium text-destructive mb-2">
+            Frame size mismatch
+          </p>
+          <ul className="text-xs text-destructive/80 space-y-1">
+            {validationErrors.slice(0, 3).map((error) => (
+              <li key={error.fileName} className="font-mono">
+                {error.fileName}: {error.actualSize} (expected {error.expectedSize})
+              </li>
+            ))}
+            {validationErrors.length > 3 && (
+              <li className="text-destructive/60">
+                ...and {validationErrors.length - 3} more
+              </li>
+            )}
+          </ul>
+        </div>
+      )}
     </div>
   );
 };
