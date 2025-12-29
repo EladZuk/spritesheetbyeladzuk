@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { GripVertical, X, AlertCircle } from "lucide-react";
+import { GripVertical, X, AlertCircle, Copy } from "lucide-react";
 import { FrameData, ValidationError } from "@/types/spritesheet";
 import { Button } from "@/components/ui/button";
 
@@ -7,6 +7,7 @@ interface FrameListProps {
   frames: FrameData[];
   onReorder: (fromIndex: number, toIndex: number) => void;
   onRemove: (id: string) => void;
+  onDuplicate: (id: string) => void;
   validationErrors: ValidationError[];
   expectedWidth: number;
   expectedHeight: number;
@@ -16,6 +17,7 @@ export function FrameList({
   frames,
   onReorder,
   onRemove,
+  onDuplicate,
   validationErrors,
   expectedWidth,
   expectedHeight,
@@ -97,7 +99,17 @@ export function FrameList({
               variant="ghost"
               size="icon"
               className="w-6 h-6 opacity-0 group-hover:opacity-100 transition-opacity"
+              onClick={() => onDuplicate(frame.id)}
+              title="Duplicate frame"
+            >
+              <Copy className="w-3.5 h-3.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="w-6 h-6 opacity-0 group-hover:opacity-100 transition-opacity"
               onClick={() => onRemove(frame.id)}
+              title="Remove frame"
             >
               <X className="w-3.5 h-3.5" />
             </Button>

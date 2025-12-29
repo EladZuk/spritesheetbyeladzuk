@@ -83,6 +83,26 @@ export function useSpriteSheet() {
     setExportInfo(null);
   }, []);
 
+  const duplicateFrame = useCallback((id: string) => {
+    setFrames((prev) => {
+      const index = prev.findIndex((f) => f.id === id);
+      if (index === -1) return prev;
+      
+      const frameToDupe = prev[index];
+      const newFrame: FrameData = {
+        ...frameToDupe,
+        id: `${frameToDupe.name}-${Date.now()}-${Math.random()}`,
+        name: `${frameToDupe.name.replace(/\.png$/i, '')}_copy.png`,
+      };
+      
+      const newFrames = [...prev];
+      newFrames.splice(index + 1, 0, newFrame);
+      return newFrames;
+    });
+    setGeneratedSheet(null);
+    setExportInfo(null);
+  }, []);
+
   const reorderFrames = useCallback((fromIndex: number, toIndex: number) => {
     setFrames((prev) => {
       const newFrames = [...prev];
@@ -211,6 +231,7 @@ export function useSpriteSheet() {
     setSettings: updateSettings,
     addFiles,
     removeFrame,
+    duplicateFrame,
     reorderFrames,
     generateSheet,
     generatedSheet,

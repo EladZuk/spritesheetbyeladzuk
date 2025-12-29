@@ -1,9 +1,9 @@
-import { useRef } from "react";
-import { Download, AlertTriangle, Copy, Check } from "lucide-react";
+import { useRef, useState } from "react";
+import { Download, AlertTriangle, Copy, Check, Film, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FrameData, SpriteSheetSettings, ExportInfo } from "@/types/spritesheet";
-import { useState } from "react";
 import { toast } from "sonner";
+import GIF from "gif.js";
 
 interface PreviewPanelProps {
   frames: FrameData[];
@@ -30,6 +30,7 @@ export function PreviewPanel({
 }: PreviewPanelProps) {
   const previewRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
+  const [isExportingGif, setIsExportingGif] = useState(false);
   const canGenerate = frames.length > 0 && settings.frameWidth > 0 && settings.frameHeight > 0 && !hasValidationErrors;
 
   const downloadSheet = () => {
@@ -38,6 +39,59 @@ export function PreviewPanel({
     link.download = `${settings.animationName || "sprite"}_sheet.png`;
     link.href = generatedSheet;
     link.click();
+  };
+
+  const exportAsGif = async () => {
+    if (frames.length === 0) return;
+    
+    setIsExportingGif(true);
+    
+    try {
+      const gif = new GIF({
+        workers: 2,
+        quality: 10,
+        width: settings.frameWidth,
+        height: settings.frameHeight,
+        workerScript: "https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.js",
+      });
+
+      // Load all frame images
+      for (const frame of frames) {
+        const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+          const image = new Image();
+          image.crossOrigin = "anonymous";
+          image.onload = () => resolve(image);
+          image.onerror = reject;
+          image.src = frame.thumbnailUrl;
+        });
+
+        // Draw to canvas for GIF
+        const canvas = document.createElement("canvas");
+        canvas.width = settings.frameWidth;
+        canvas.height = settings.frameHeight;
+        const ctx = canvas.getContext("2d")!;
+        ctx.drawImage(img, 0, 0, settings.frameWidth, settings.frameHeight);
+        
+        gif.addFrame(ctx, { copy: true, delay: Math.round(1000 / settings.suggestedFps) });
+      }
+
+      gif.on("finished", (blob: Blob) => {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.download = `${settings.animationName || "sprite"}_animation.gif`;
+        link.href = url;
+        link.click();
+        URL.revokeObjectURL(url);
+        setIsExportingGif(false);
+        toast.success("GIF exported successfully!");
+      });
+
+      gif.render();
+    } catch (error) {
+      console.error("GIF export failed:", error);
+      toast.error("Failed to export GIF");
+      setIsExportingGif(false);
+    }
   };
 
   const copyExportInfo = async () => {
@@ -194,6 +248,10 @@ Suggested FPS (Unity): ${exportInfo.suggestedFps}`;
               <Button onClick={downloadSheet} className="gap-2">
                 <Download className="w-4 h-4" />
                 Download PNG
+              </Button>
+              <Button onClick={exportAsGif} variant="secondary" className="gap-2" disabled={isExportingGif || frames.length === 0}>
+                {isExportingGif ? <Loader2 className="w-4 h-4 animate-spin" /> : <Film className="w-4 h-4" />}
+                {isExportingGif ? "Exporting..." : "Export GIF"}
               </Button>
             </div>
           </div>

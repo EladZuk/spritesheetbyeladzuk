@@ -19,6 +19,7 @@ const Index = () => {
     setSettings,
     addFiles,
     removeFrame,
+    duplicateFrame,
     reorderFrames,
     generateSheet,
     generatedSheet,
@@ -96,6 +97,7 @@ const Index = () => {
                   frames={frames}
                   onReorder={reorderFrames}
                   onRemove={removeFrame}
+                  onDuplicate={duplicateFrame}
                   validationErrors={validationErrors}
                   expectedWidth={settings.frameWidth}
                   expectedHeight={settings.frameHeight}
