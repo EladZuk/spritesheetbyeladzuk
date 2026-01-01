@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { GripVertical, X, AlertCircle, Copy } from "lucide-react";
+import { GripVertical, X, AlertCircle, Copy, ArrowDownUp } from "lucide-react";
 import { FrameData, ValidationError } from "@/types/spritesheet";
 import { Button } from "@/components/ui/button";
 
@@ -8,6 +8,7 @@ interface FrameListProps {
   onReorder: (fromIndex: number, toIndex: number) => void;
   onRemove: (id: string) => void;
   onDuplicate: (id: string) => void;
+  onReverse: () => void;
   validationErrors: ValidationError[];
   expectedWidth: number;
   expectedHeight: number;
@@ -18,6 +19,7 @@ export function FrameList({
   onReorder,
   onRemove,
   onDuplicate,
+  onReverse,
   validationErrors,
   expectedWidth,
   expectedHeight,
@@ -57,9 +59,23 @@ export function FrameList({
     );
   }
 
+  const showReverseButton = frames.length >= 2;
+
   return (
-    <div className="space-y-1.5 max-h-64 overflow-y-auto scrollbar-thin pr-1">
-      {frames.map((frame, index) => {
+    <div className="space-y-2">
+      {showReverseButton && (
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full gap-2"
+          onClick={onReverse}
+        >
+          <ArrowDownUp className="w-3.5 h-3.5" />
+          Reverse Order
+        </Button>
+      )}
+      <div className="space-y-1.5 max-h-64 overflow-y-auto scrollbar-thin pr-1">
+        {frames.map((frame, index) => {
         const error = getError(frame.name);
         return (
           <div
@@ -116,6 +132,7 @@ export function FrameList({
           </div>
         );
       })}
+      </div>
     </div>
   );
 }

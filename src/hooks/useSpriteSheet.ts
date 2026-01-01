@@ -120,6 +120,13 @@ export function useSpriteSheet() {
     setMetadata(null);
   }, []);
 
+  const reverseFrames = useCallback(() => {
+    setFrames((prev) => [...prev].reverse());
+    setGeneratedSheet(null);
+    setExportInfo(null);
+    setMetadata(null);
+  }, []);
+
   const validateFrames = useCallback(() => {
     const errors: ValidationError[] = [];
     
@@ -266,6 +273,7 @@ export function useSpriteSheet() {
     removeFrame,
     duplicateFrame,
     reorderFrames,
+    reverseFrames,
     generateSheet,
     generatedSheet,
     exportInfo,
