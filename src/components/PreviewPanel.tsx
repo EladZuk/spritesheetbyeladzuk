@@ -1,7 +1,10 @@
 import { useRef, useState } from "react";
-import { Download, AlertTriangle, Copy, Check, Film, Loader2 } from "lucide-react";
+import { Download, AlertTriangle, Copy, Check, Film, Loader2, FileJson } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { FrameData, SpriteSheetSettings, ExportInfo } from "@/types/spritesheet";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { FrameData, SpriteSheetSettings, ExportInfo, SpriteSheetMetadata } from "@/types/spritesheet";
 import { toast } from "sonner";
 import GIF from "gif.js";
 
@@ -10,6 +13,7 @@ interface PreviewPanelProps {
   settings: SpriteSheetSettings;
   generatedSheet: string | null;
   exportInfo: ExportInfo | null;
+  metadata: SpriteSheetMetadata | null;
   onGenerate: () => void;
   isGenerating: boolean;
   hasValidationErrors: boolean;
@@ -22,6 +26,7 @@ export function PreviewPanel({
   settings,
   generatedSheet,
   exportInfo,
+  metadata,
   onGenerate,
   isGenerating,
   hasValidationErrors,
@@ -31,6 +36,7 @@ export function PreviewPanel({
   const previewRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
   const [isExportingGif, setIsExportingGif] = useState(false);
+  const [generateJson, setGenerateJson] = useState(true);
   const canGenerate = frames.length > 0 && settings.frameWidth > 0 && settings.frameHeight > 0 && !hasValidationErrors;
 
   const downloadSheet = () => {
@@ -65,11 +71,16 @@ export function PreviewPanel({
           image.src = frame.thumbnailUrl;
         });
 
-        // Draw to canvas for GIF
+        // Draw to canvas for GIF (apply flip if enabled)
         const canvas = document.createElement("canvas");
         canvas.width = settings.frameWidth;
         canvas.height = settings.frameHeight;
         const ctx = canvas.getContext("2d")!;
+        
+        if (settings.flipHorizontal) {
+          ctx.translate(settings.frameWidth, 0);
+          ctx.scale(-1, 1);
+        }
         ctx.drawImage(img, 0, 0, settings.frameWidth, settings.frameHeight);
         
         gif.addFrame(ctx, { copy: true, delay: Math.round(1000 / settings.suggestedFps) });
@@ -92,6 +103,20 @@ export function PreviewPanel({
       toast.error("Failed to export GIF");
       setIsExportingGif(false);
     }
+  };
+
+  const downloadMetadataJson = () => {
+    if (!metadata) return;
+    
+    const jsonString = JSON.stringify(metadata, null, 2);
+    const blob = new Blob([jsonString], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.download = `${settings.animationName || "sprite"}_sheet_metadata.json`;
+    link.href = url;
+    link.click();
+    URL.revokeObjectURL(url);
+    toast.success("JSON metadata downloaded!");
   };
 
   const copyExportInfo = async () => {
@@ -127,7 +152,21 @@ Suggested FPS (Unity): ${exportInfo.suggestedFps}`;
       {/* Preview Header */}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-sm font-semibold text-foreground">Preview</h2>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          {/* JSON Metadata Checkbox */}
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="generateJson"
+              checked={generateJson}
+              onCheckedChange={(checked) => setGenerateJson(checked === true)}
+            />
+            <Label
+              htmlFor="generateJson"
+              className="text-xs font-medium leading-none cursor-pointer"
+            >
+              Generate JSON metadata
+            </Label>
+          </div>
           <Button
             onClick={onGenerate}
             disabled={!canGenerate || isGenerating}
@@ -249,6 +288,29 @@ Suggested FPS (Unity): ${exportInfo.suggestedFps}`;
                 <Download className="w-4 h-4" />
                 Download PNG
               </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span>
+                      <Button
+                        onClick={downloadMetadataJson}
+                        variant="outline"
+                        size="sm"
+                        className="gap-2 w-full"
+                        disabled={!metadata || !generateJson}
+                      >
+                        <FileJson className="w-4 h-4" />
+                        Download JSON
+                      </Button>
+                    </span>
+                  </TooltipTrigger>
+                  {(!metadata || !generateJson) && (
+                    <TooltipContent>
+                      <p>{!generateJson ? "Enable 'Generate JSON metadata' checkbox first" : "Generate a sprite sheet first"}</p>
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              </TooltipProvider>
               <Button onClick={exportAsGif} variant="secondary" className="gap-2" disabled={isExportingGif || frames.length === 0}>
                 {isExportingGif ? <Loader2 className="w-4 h-4 animate-spin" /> : <Film className="w-4 h-4" />}
                 {isExportingGif ? "Exporting..." : "Export GIF"}

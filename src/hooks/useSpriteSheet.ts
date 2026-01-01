@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { FrameData, SpriteSheetSettings, ExportInfo, ValidationError } from "@/types/spritesheet";
+import { FrameData, SpriteSheetSettings, ExportInfo, ValidationError, SpriteSheetMetadata } from "@/types/spritesheet";
 
 const DEFAULT_SETTINGS: SpriteSheetSettings = {
   frameWidth: 500,
@@ -9,6 +9,7 @@ const DEFAULT_SETTINGS: SpriteSheetSettings = {
   padding: 0,
   animationName: "",
   suggestedFps: 12,
+  flipHorizontal: false,
 };
 
 export function useSpriteSheet() {
@@ -16,6 +17,7 @@ export function useSpriteSheet() {
   const [settings, setSettings] = useState<SpriteSheetSettings>(DEFAULT_SETTINGS);
   const [generatedSheet, setGeneratedSheet] = useState<string | null>(null);
   const [exportInfo, setExportInfo] = useState<ExportInfo | null>(null);
+  const [metadata, setMetadata] = useState<SpriteSheetMetadata | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
   const [detectedSize, setDetectedSize] = useState<{ width: number; height: number } | null>(null);
@@ -63,6 +65,7 @@ export function useSpriteSheet() {
     });
     setGeneratedSheet(null);
     setExportInfo(null);
+    setMetadata(null);
 
     // Auto-detect frame size from first PNG if not manually set
     if (firstFrameSize && !hasManuallySetSize) {
@@ -81,6 +84,7 @@ export function useSpriteSheet() {
     });
     setGeneratedSheet(null);
     setExportInfo(null);
+    setMetadata(null);
   }, []);
 
   const duplicateFrame = useCallback((id: string) => {
@@ -101,6 +105,7 @@ export function useSpriteSheet() {
     });
     setGeneratedSheet(null);
     setExportInfo(null);
+    setMetadata(null);
   }, []);
 
   const reorderFrames = useCallback((fromIndex: number, toIndex: number) => {
@@ -112,6 +117,7 @@ export function useSpriteSheet() {
     });
     setGeneratedSheet(null);
     setExportInfo(null);
+    setMetadata(null);
   }, []);
 
   const validateFrames = useCallback(() => {
@@ -137,7 +143,7 @@ export function useSpriteSheet() {
     setIsGenerating(true);
 
     try {
-      const { frameWidth, frameHeight, columns, spacing, padding } = settings;
+      const { frameWidth, frameHeight, columns, spacing, padding, flipHorizontal } = settings;
       const frameCount = frames.length;
       const rows = Math.ceil(frameCount / columns);
 
@@ -167,7 +173,15 @@ export function useSpriteSheet() {
           image.src = frame.thumbnailUrl;
         });
 
-        ctx.drawImage(img, x, y, frameWidth, frameHeight);
+        if (flipHorizontal) {
+          ctx.save();
+          ctx.translate(x + frameWidth, y);
+          ctx.scale(-1, 1);
+          ctx.drawImage(img, 0, 0, frameWidth, frameHeight);
+          ctx.restore();
+        } else {
+          ctx.drawImage(img, x, y, frameWidth, frameHeight);
+        }
       }
 
       // Export as PNG
@@ -185,6 +199,24 @@ export function useSpriteSheet() {
         sheetWidth: totalWidth,
         sheetHeight: totalHeight,
       });
+
+      // Generate metadata
+      setMetadata({
+        animationName: settings.animationName || "sprite",
+        frameWidth,
+        frameHeight,
+        frameCount,
+        columns,
+        rows,
+        spacing,
+        padding,
+        suggestedFps: settings.suggestedFps,
+        pivot: "BottomCenter",
+        frames: frames.map((frame, index) => ({
+          index,
+          filename: frame.name,
+        })),
+      });
     } finally {
       setIsGenerating(false);
     }
@@ -198,6 +230,7 @@ export function useSpriteSheet() {
     setSettings(DEFAULT_SETTINGS);
     setGeneratedSheet(null);
     setExportInfo(null);
+    setMetadata(null);
     setValidationErrors([]);
     setDetectedSize(null);
     setShowSizeDialog(false);
@@ -236,6 +269,7 @@ export function useSpriteSheet() {
     generateSheet,
     generatedSheet,
     exportInfo,
+    metadata,
     isGenerating,
     validationErrors,
     validateFrames,

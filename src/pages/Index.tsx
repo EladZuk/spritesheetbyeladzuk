@@ -24,6 +24,7 @@ const Index = () => {
     generateSheet,
     generatedSheet,
     exportInfo,
+    metadata,
     isGenerating,
     validationErrors,
     validateFrames,
@@ -138,6 +139,7 @@ const Index = () => {
                 settings={settings}
                 generatedSheet={generatedSheet}
                 exportInfo={exportInfo}
+                metadata={metadata}
                 onGenerate={generateSheet}
                 isGenerating={isGenerating}
                 hasValidationErrors={validationErrors.length > 0}
@@ -158,6 +160,7 @@ const Index = () => {
                 onFpsChange={handleFpsChange}
                 frameWidth={settings.frameWidth}
                 frameHeight={settings.frameHeight}
+                flipHorizontal={settings.flipHorizontal}
               />
             </div>
           </section>

@@ -11,6 +11,7 @@ interface AnimationPreviewProps {
   onFpsChange: (fps: number) => void;
   frameWidth: number;
   frameHeight: number;
+  flipHorizontal: boolean;
 }
 
 export function AnimationPreview({
@@ -19,6 +20,7 @@ export function AnimationPreview({
   onFpsChange,
   frameWidth,
   frameHeight,
+  flipHorizontal,
 }: AnimationPreviewProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentFrame, setCurrentFrame] = useState(0);
@@ -126,7 +128,10 @@ export function AnimationPreview({
               src={frames[currentFrame]?.thumbnailUrl}
               alt={`Frame ${currentFrame + 1}`}
               className="w-full h-full object-contain"
-              style={{ imageRendering: "pixelated" }}
+              style={{ 
+                imageRendering: "pixelated",
+                transform: flipHorizontal ? "scaleX(-1)" : undefined,
+              }}
             />
             <span className="absolute bottom-1 right-1 text-[10px] font-mono bg-background/80 px-1.5 py-0.5 rounded">
               {currentFrame + 1}/{frames.length}

@@ -1,5 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { SpriteSheetSettings } from "@/types/spritesheet";
 
 interface SettingsPanelProps {
@@ -8,7 +9,7 @@ interface SettingsPanelProps {
 }
 
 export function SettingsPanel({ settings, onSettingsChange }: SettingsPanelProps) {
-  const handleChange = (key: keyof SpriteSheetSettings, value: string | number) => {
+  const handleChange = (key: keyof SpriteSheetSettings, value: string | number | boolean) => {
     onSettingsChange({
       ...settings,
       [key]: typeof settings[key] === "number" ? Number(value) || 0 : value,
@@ -72,6 +73,26 @@ export function SettingsPanel({ settings, onSettingsChange }: SettingsPanelProps
             min={0}
           />
         </div>
+      </div>
+
+      {/* Flip Horizontal Option */}
+      <div className="pt-2 border-t border-border">
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="flipHorizontal"
+            checked={settings.flipHorizontal}
+            onCheckedChange={(checked) => handleChange("flipHorizontal", checked === true)}
+          />
+          <Label
+            htmlFor="flipHorizontal"
+            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+          >
+            Flip horizontally (mirror)
+          </Label>
+        </div>
+        <p className="text-[10px] text-muted-foreground mt-1 ml-6">
+          If enabled, each frame will be mirrored horizontally in the generated sheet.
+        </p>
       </div>
 
       <div className="pt-2 border-t border-border">
