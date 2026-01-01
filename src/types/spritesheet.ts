@@ -15,6 +15,7 @@ export interface SpriteSheetSettings {
   padding: number;
   animationName: string;
   suggestedFps: number;
+  flipHorizontal: boolean;
 }
 
 export interface ExportInfo {
@@ -27,6 +28,25 @@ export interface ExportInfo {
   suggestedFps: number;
   sheetWidth: number;
   sheetHeight: number;
+}
+
+export interface FrameMetadata {
+  index: number;
+  filename: string;
+}
+
+export interface SpriteSheetMetadata {
+  animationName: string;
+  frameWidth: number;
+  frameHeight: number;
+  frameCount: number;
+  columns: number;
+  rows: number;
+  spacing: number;
+  padding: number;
+  suggestedFps: number;
+  pivot: string;
+  frames: FrameMetadata[];
 }
 
 export interface ValidationError {
