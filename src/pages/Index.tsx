@@ -21,6 +21,7 @@ const Index = () => {
     removeFrame,
     duplicateFrame,
     reorderFrames,
+    reverseFrames,
     generateSheet,
     generatedSheet,
     exportInfo,
@@ -99,6 +100,7 @@ const Index = () => {
                   onReorder={reorderFrames}
                   onRemove={removeFrame}
                   onDuplicate={duplicateFrame}
+                  onReverse={reverseFrames}
                   validationErrors={validationErrors}
                   expectedWidth={settings.frameWidth}
                   expectedHeight={settings.frameHeight}
