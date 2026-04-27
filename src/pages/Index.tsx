@@ -71,9 +71,10 @@ const Index = () => {
         style={
           captureMode
             ? {
-                aspectRatio: "16 / 9",
-                width: "min(100vw, calc((100vh - 40px) * 16 / 9))",
-                maxHeight: "calc(100vh - 40px)",
+                aspectRatio: "9 / 16",
+                height: "calc(100vh - 40px)",
+                width: "calc((100vh - 40px) * 9 / 16)",
+                maxWidth: "100vw",
                 overflowY: "auto",
               }
             : undefined
