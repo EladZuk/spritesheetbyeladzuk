@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Layers, Grid3X3, Film, Video } from "lucide-react";
+import { Layers, Grid3X3, Film, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FileUpload } from "@/components/FileUpload";
 import { FrameList } from "@/components/FrameList";
@@ -58,23 +58,23 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className={captureMode ? "min-h-screen bg-slate-950 flex flex-col" : "min-h-screen bg-background"}>
       {/* Top Credit Bar */}
       <TopBar />
 
       <div
         className={
           captureMode
-            ? "mx-auto bg-background overflow-hidden border border-border"
+            ? "mx-auto my-4 bg-background overflow-y-auto border border-border shadow-2xl rounded-xl"
             : ""
         }
         style={
           captureMode
             ? {
-                aspectRatio: "16 / 9",
-                width: "min(100vw, calc((100vh - 40px) * 16 / 9))",
-                maxHeight: "calc(100vh - 40px)",
-                overflowY: "auto",
+                aspectRatio: "9 / 16",
+                height: "min(calc(100dvh - 72px), calc(100vw * 16 / 9))",
+                width: "auto",
+                maxWidth: "100vw",
               }
             : undefined
         }
@@ -102,10 +102,10 @@ const Index = () => {
                 size="sm"
                 onClick={() => setCaptureMode((v) => !v)}
                 className="gap-2"
-                title="Constrain layout to a 16:9 frame for video capture"
+                title="Constrain layout to a 9:16 mobile frame for video capture"
               >
-                <Video className="w-4 h-4" />
-                {captureMode ? "Exit 16:9" : "16:9 Capture"}
+                <Smartphone className="w-4 h-4" />
+                {captureMode ? "Exit 9:16" : "9:16 Mobile"}
               </Button>
               <ClearAllDialog onConfirm={clearAll} disabled={frames.length === 0} />
             </div>
@@ -114,8 +114,8 @@ const Index = () => {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-6">
-        <div className="grid lg:grid-cols-[360px_1fr] gap-6">
+      <main className={captureMode ? "px-3 py-4" : "container mx-auto px-4 py-6"}>
+        <div className={captureMode ? "flex flex-col gap-4" : "grid lg:grid-cols-[360px_1fr] gap-6"}>
           {/* Left Sidebar - Controls */}
           <aside className="space-y-4">
             {/* File Upload */}
