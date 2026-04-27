@@ -103,10 +103,10 @@ const Index = () => {
                 size="sm"
                 onClick={() => setCaptureMode((v) => !v)}
                 className="gap-2"
-                title="Constrain layout to a 16:9 frame for video capture"
+                title="Constrain layout to a 9:16 frame for vertical video capture"
               >
                 <Video className="w-4 h-4" />
-                {captureMode ? "Exit 16:9" : "16:9 Capture"}
+                {captureMode ? "Exit 9:16" : "9:16 Capture"}
               </Button>
               <ClearAllDialog onConfirm={clearAll} disabled={frames.length === 0} />
             </div>
