@@ -24,7 +24,7 @@ export function AnimationPreview({
 }: AnimationPreviewProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentFrame, setCurrentFrame] = useState(0);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const stopAnimation = useCallback(() => {
     if (intervalRef.current) {
