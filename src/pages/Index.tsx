@@ -127,7 +127,7 @@ const Index = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-6">
-        <div className="grid lg:grid-cols-[360px_1fr] gap-6">
+        <div className={captureMode ? "grid grid-cols-1 gap-6" : "grid lg:grid-cols-[360px_1fr] gap-6"}>
           {/* Left Sidebar - Controls */}
           <aside className="space-y-4">
             {/* File Upload */}
