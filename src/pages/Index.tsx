@@ -84,9 +84,9 @@ const Index = () => {
           captureMode
             ? {
                 width: 1080,
-                transform: `scale(calc((100vh - 40px) * 9 / 16 / 1080))`,
+                height: 1920,
+                transform: `scale(calc((100vh - 40px) / 1920))`,
                 transformOrigin: "top left",
-                height: `calc(1080 * 16 / 9 * 1px)`,
               }
             : undefined
         }
@@ -127,7 +127,7 @@ const Index = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-6">
-        <div className="grid lg:grid-cols-[360px_1fr] gap-6">
+        <div className={captureMode ? "grid grid-cols-1 gap-6" : "grid lg:grid-cols-[360px_1fr] gap-6"}>
           {/* Left Sidebar - Controls */}
           <aside className="space-y-4">
             {/* File Upload */}
