@@ -242,6 +242,7 @@ const Index = () => {
         onChangeManually={dismissSizeDialog}
       />
       </div>
+      </div>
     </div>
   );
 };
