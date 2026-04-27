@@ -229,6 +229,7 @@ const Index = () => {
         onUseDetected={applyDetectedSize}
         onChangeManually={dismissSizeDialog}
       />
+      </div>
     </div>
   );
 };
