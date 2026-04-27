@@ -39,6 +39,7 @@ const Index = () => {
 
   const [baselineEnabled, setBaselineEnabled] = useState(false);
   const [baselineOffset, setBaselineOffset] = useState(Math.round(settings.frameHeight * 0.85));
+  const [captureMode, setCaptureMode] = useState(false);
 
   // Update baseline offset when frame height changes
   useEffect(() => {
