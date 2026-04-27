@@ -96,7 +96,19 @@ const Index = () => {
                 </p>
               </div>
             </div>
-            <ClearAllDialog onConfirm={clearAll} disabled={frames.length === 0} />
+            <div className="flex items-center gap-2">
+              <Button
+                variant={captureMode ? "default" : "outline"}
+                size="sm"
+                onClick={() => setCaptureMode((v) => !v)}
+                className="gap-2"
+                title="Constrain layout to a 16:9 frame for video capture"
+              >
+                <Video className="w-4 h-4" />
+                {captureMode ? "Exit 16:9" : "16:9 Capture"}
+              </Button>
+              <ClearAllDialog onConfirm={clearAll} disabled={frames.length === 0} />
+            </div>
           </div>
         </div>
       </header>
