@@ -65,28 +65,16 @@ const Index = () => {
       <div
         className={
           captureMode
-            ? "mx-auto bg-background overflow-hidden border border-border relative"
+            ? "mx-auto bg-background overflow-hidden border border-border"
             : ""
         }
         style={
           captureMode
             ? {
-                aspectRatio: "9 / 16",
-                height: "calc(100vh - 40px)",
-                width: "calc((100vh - 40px) * 9 / 16)",
-                maxWidth: "100vw",
-              }
-            : undefined
-        }
-      >
-      <div
-        style={
-          captureMode
-            ? {
-                width: 1080,
-                height: 1920,
-                transform: `scale(calc((100vh - 40px) / 1920))`,
-                transformOrigin: "top left",
+                aspectRatio: "16 / 9",
+                width: "min(100vw, calc((100vh - 40px) * 16 / 9))",
+                maxHeight: "calc(100vh - 40px)",
+                overflowY: "auto",
               }
             : undefined
         }
@@ -114,10 +102,10 @@ const Index = () => {
                 size="sm"
                 onClick={() => setCaptureMode((v) => !v)}
                 className="gap-2"
-                title="Constrain layout to a 9:16 frame for vertical video capture"
+                title="Constrain layout to a 16:9 frame for video capture"
               >
                 <Video className="w-4 h-4" />
-                {captureMode ? "Exit 9:16" : "9:16 Capture"}
+                {captureMode ? "Exit 16:9" : "16:9 Capture"}
               </Button>
               <ClearAllDialog onConfirm={clearAll} disabled={frames.length === 0} />
             </div>
@@ -127,7 +115,7 @@ const Index = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-6">
-        <div className={captureMode ? "grid grid-cols-1 gap-6" : "grid lg:grid-cols-[360px_1fr] gap-6"}>
+        <div className="grid lg:grid-cols-[360px_1fr] gap-6">
           {/* Left Sidebar - Controls */}
           <aside className="space-y-4">
             {/* File Upload */}
@@ -241,7 +229,6 @@ const Index = () => {
         onUseDetected={applyDetectedSize}
         onChangeManually={dismissSizeDialog}
       />
-      </div>
       </div>
     </div>
   );
