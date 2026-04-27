@@ -84,9 +84,9 @@ const Index = () => {
           captureMode
             ? {
                 width: 1080,
-                transform: `scale(calc((100vh - 40px) * 9 / 16 / 1080))`,
+                height: 1920,
+                transform: `scale(calc((100vh - 40px) / 1920))`,
                 transformOrigin: "top left",
-                height: `calc(1080 * 16 / 9 * 1px)`,
               }
             : undefined
         }
