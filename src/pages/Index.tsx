@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Layers, Grid3X3, Film } from "lucide-react";
+import { Layers, Grid3X3, Film, Video } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { FileUpload } from "@/components/FileUpload";
 import { FrameList } from "@/components/FrameList";
 import { SettingsPanel } from "@/components/SettingsPanel";
