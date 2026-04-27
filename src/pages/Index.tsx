@@ -65,7 +65,7 @@ const Index = () => {
       <div
         className={
           captureMode
-            ? "mx-auto bg-background overflow-hidden border border-border"
+            ? "mx-auto bg-background overflow-hidden border border-border relative"
             : ""
         }
         style={
@@ -75,7 +75,18 @@ const Index = () => {
                 height: "calc(100vh - 40px)",
                 width: "calc((100vh - 40px) * 9 / 16)",
                 maxWidth: "100vw",
-                overflowY: "auto",
+              }
+            : undefined
+        }
+      >
+      <div
+        style={
+          captureMode
+            ? {
+                width: 1080,
+                transform: `scale(calc((100vh - 40px) * 9 / 16 / 1080))`,
+                transformOrigin: "top left",
+                height: `calc(1080 * 16 / 9 * 1px)`,
               }
             : undefined
         }
@@ -230,6 +241,7 @@ const Index = () => {
         onUseDetected={applyDetectedSize}
         onChangeManually={dismissSizeDialog}
       />
+      </div>
       </div>
     </div>
   );
